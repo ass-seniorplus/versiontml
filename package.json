@@ -1,0 +1,11 @@
+{
+  "name": "version-html",
+  "version": "1.0.0",
+  "description": "seniorplus",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Senior plus",
+  "license": "ISC"
+}
