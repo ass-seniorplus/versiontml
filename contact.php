@@ -1,37 +1,42 @@
 <?php
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // Récupérer les données du formulaire
+if ($_SERVER["REQUEST_METHOD"] === "POST") {
+    // Vérification du captcha
+    $userCaptcha = intval($_POST["captcha"]);
+    $captchaNum1 = intval($_POST["captchaNum1"]);
+    $captchaNum2 = intval($_POST["captchaNum2"]);
+    $captchaOperator = $_POST["captchaOperator"];
+
+    $providedResult = 0;
+    if ($captchaOperator === "+") {
+        $providedResult = $captchaNum1 + $captchaNum2;
+    } else if ($captchaOperator === "-") {
+        $providedResult = $captchaNum1 - $captchaNum2;
+    } else if ($captchaOperator === "*") {
+        $providedResult = $captchaNum1 * $captchaNum2;
+    } else {
+        echo "failed"; // Captcha incorrect
+        exit;
+    }
+
+    if ($userCaptcha !== $providedResult) {
+        echo "failed"; // Captcha incorrect
+        exit;
+    }
+
+    // Reste du traitement du formulaire
     $nomComplet = $_POST["nomComplet"];
     $email = $_POST["email"];
     $telephone = $_POST["telephone"];
     $typeAide = $_POST["typeAide"];
     $message = $_POST["message"];
 
-    // Adresse e-mail de destination
-    $to = "seniorplus@orange.fr";
+    // Ajoutez ici le code pour envoyer l'e-mail via Mailjet ou autre service
+    // ...
 
-    // Sujet de l'e-mail
-    $subject = "Nouveau message de formulaire de contact";
-
-    // Corps de l'e-mail
-    $messageBody = "Nom Complet: $nomComplet\n";
-    $messageBody .= "Email: $email\n";
-    $messageBody .= "Téléphone: $telephone\n";
-    $messageBody .= "Type d'Aide: $typeAide\n";
-    $messageBody .= "Message:\n$message";
-
-    // Entêtes de l'e-mail
-    $headers = "From: $email";
-
-    // Envoyer l'e-mail
-    if (mail($to, $subject, $messageBody, $headers)) {
-        // Si l'e-mail est envoyé avec succès, vous pouvez renvoyer une réponse JSON si nécessaire
-        $response = array("status" => "success", "message" => "Message envoyé avec succès!");
-        echo json_encode($response);
-    } else {
-        // En cas d'échec de l'envoi de l'e-mail
-        $response = array("status" => "error", "message" => "Erreur lors de l'envoi du message.");
-        echo json_encode($response);
-    }
+    echo `<div class="alert alert-success" role="alert">
+          A simple success alert with <a href="#" class="alert-link">an example link</a>. Give it a click if you like.
+        </div>`;
+} else {
+    echo "Un problème est survenu lors de l'envoi du message.";
 }
-?>
+

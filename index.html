@@ -81,7 +81,7 @@
 
 
                 <li class="nav-item">
-                    <a class="nav-link" href="#contacter" data-bs-toggle="modal">
+                    <a class="nav-link" href="contact.html">
                         Contactez-nous
                     </a>
                 </li>
@@ -470,62 +470,6 @@
     </div>
 </div>
 
-<div class="modal fade" id="contacter" tabindex="-1">
-    <div class="modal-lg modal-dialog modal-dialog-centered" role="document">
-        <div class="modal-content">
-            <div class="modal-header d-block position-relative border-0 px-sm-5 px-4">
-                <h3 class="h4 modal-title mt-4 text-center">
-                    Nous contacter
-                </h3>
-                <button  class="btn-close position-absolute top-0 end-0 mt-3 me-3" type="button" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body px-sm-5 px-4">
-                <form class="needs-validation" novalidate method="post">
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label" for="validationCustom01">Nom Complet</label>
-                            <input class="form-control" type="text" id="validationCustom01" name="nomComplet" placeholder="Nom Complet" required>
-                            <div class="valid-feedback"></div>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label" for="validationCustomEmail">Email</label>
-                            <input class="form-control" type="email" id="validationCustomEmail" name="email" placeholder="Email" required>
-                            <div class="invalid-feedback">Veuillez fournir une adresse email valide.</div>
-                            <div class="valid-feedback"></div>
-                        </div>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label" for="validationCustomTel">Téléphone (Format français uniquement)</label>
-                        <input class="form-control" type="tel" id="validationCustomTel" name="telephone" placeholder="01 23 45 67 89"  required>
-                        <div class="invalid-feedback">Veuillez fournir un numéro de téléphone français valide.</div>
-                        <div class="valid-feedback"></div>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label" for="validationCustomTypeAide">Type d'Aide</label>
-                        <select class="form-select" id="validationCustomTypeAide" name="typeAide" required>
-                            <option value="">Choisissez le type d'aide...</option>
-                            <option value="aideMenagere">Aide Ménagère</option>
-                            <option value="transportAccompagnement">Transport et Accompagnement</option>
-                            <!-- Ajoutez d'autres options si nécessaire -->
-                        </select>
-                        <div class="invalid-feedback">Veuillez choisir un type d'aide.</div>
-                        <div class="valid-feedback"></div>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label" for="validationCustomMessage">Message</label>
-                        <textarea class="form-control" id="validationCustomMessage" name="message" placeholder="Votre message" required></textarea>
-                        <div class="invalid-feedback">Veuillez fournir un message.</div>
-                        <div class="valid-feedback"></div>
-                    </div>
-                    <button class="btn btn-primary" type="submit" onclick="submitForm()">Envoyer</button>
-                    <p id="confirmationMessage" style="display: none; color: green;">Message envoyé avec succès!</p>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
-
-
 
 
 <footer class="footer pt-lg-5 pt-4 bg-dark text-light">
@@ -535,7 +479,6 @@
                 <div class="mb-4 pb-sm-3">
                     <a class="d-inline-block text-decoration-none" href="index.html">
                         <img class="d-block" src="assets/img/logo-icon.png" width="116" alt="Senior plus"> &nbsp;&nbsp;
-
                         <span class="text-white">
                             Senior plus
                         </span>
@@ -564,7 +507,7 @@
 
             <!-- Subscription form-->
             <div class="col-lg-4 offset-lg-1 ">
-                <a href="#contacter" data-bs-toggle="modal" class="btn btn-primary" >Contactez-nous</a>
+                <a href="contact.html" class="btn btn-primary" >Contactez-nous</a>
             </div>
         </div>
     </div>
@@ -673,46 +616,59 @@
 </script>
 
 <script>
-    function submitForm() {
-        var form = document.querySelector('.needs-validation');
+    const form = document.querySelector('.needs-validation');
+    const statusTxt = form.querySelector('.button-area span');
 
-        if (form.checkValidity()) {
-            // Vérification supplémentaire avant l'envoi
-            var telephoneInput = document.getElementById('validationCustomTel');
-            if (!isValidFrenchPhoneNumber(telephoneInput.value)) {
-                alert('Veuillez fournir un numéro de téléphone français valide.');
-                return;
+    // Générer une opération aléatoire et l'afficher
+    const captchaOperation = generateCaptchaOperation();
+    document.getElementById("captchaOperation").textContent = captchaOperation;
+
+    function generateCaptchaOperation() {
+        const num1 = Math.floor(Math.random() * 10);
+        const num2 = Math.floor(Math.random() * 10);
+        const operator = ['+', '-', '*'][Math.floor(Math.random() * 3)];
+        const result = eval(`${num1} ${operator} ${num2}`);
+        return `${num1} ${operator} ${num2} = ?`;
+    }
+
+    // Ajouter la vérification du captcha côté client
+    form.onsubmit = (e) => {
+        e.preventDefault();
+        const captchaInput = document.getElementById("validationCustomCaptcha");
+        const captchaResult = eval(captchaOperation.split('=')[0].trim()); // Calculer la réponse attendue
+
+        if (parseInt(captchaInput.value) === captchaResult) {
+            statusTxt.style.color = "#0D6EFD";
+            statusTxt.style.display = "block";
+            statusTxt.innerText = "Envoi du message en cours...";
+            form.classList.add("disabled");
+
+            let xhr = new XMLHttpRequest();
+            xhr.open("POST", "contact.php", true);
+            xhr.onload = () => {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    let response = xhr.response;
+                    if (response.indexOf("required") !== -1 || response.indexOf("valid") !== -1 || response.indexOf("failed") !== -1) {
+                        statusTxt.style.color = "red";
+                    } else {
+                        form.reset();
+                        setTimeout(() => {
+                            statusTxt.style.display = "none";
+                        }, 3000);
+                    }
+                    statusTxt.innerText = response;
+                    form.classList.remove("disabled");
+                }
             }
 
-            const nomComplet = document.getElementById('validationCustom01').value;
-            const email = document.getElementById('validationCustomEmail').value;
-            const telephone = telephoneInput.value;
-
-            if (nomComplet === '' || email === '' || telephone === '') {
-                alert('Veuillez remplir tous les champs.');
-                return;
-            }
-
-
-
-            // Envoyer le formulaire côté serveur (PHP, etc.)
-            // ...
-
-            // Afficher le message de confirmation
-            document.getElementById('confirmationMessage').style.display = 'block';
-
-            // Vider les champs du formulaire
-            form.reset();
+            let formData = new FormData(form);
+            xhr.send(formData);
+        } else {
+            captchaInput.classList.add("is-invalid");
+            captchaInput.classList.remove("is-valid");
         }
+    };
 
-        form.classList.add('was-validated');
-    }
-
-    function isValidFrenchPhoneNumber(phoneNumber) {
-        // Vérifier si le numéro de téléphone correspond au format français
-        var phoneRegex =  /^((\+|00)33\s?|0)[67](\s?\d{2}){4}$/;
-        return phoneRegex.test(phoneNumber);
-    }
 </script>
 
 
